@@ -1,11 +1,13 @@
 <template>
-  <div>
+  <b-row>
     <b-button size="sm" @click="changeAttribute">
     Toggle
     </b-button>
-    <div id="cz-map">
-    </div>
-  </div>
+    <b-col cols="11" id="cz-map"></b-col>
+    <b-col class="border">
+      LEGEND
+    </b-col>
+  </b-row>
 </template>
 
 <script>
@@ -16,7 +18,7 @@ import d3Tip from 'd3-tip';
 
 export default {
   name: 'CzMap',
-  props: ['svgWidth', 'svgHeight'],
+  props: ['svgWidth', 'svgHeight', 'selectedRegion'],
   data() {
     return {
       topoData: {},
@@ -96,6 +98,17 @@ export default {
       ] // TODO: connect to API
     }
   },
+  computed: {
+    localSelectedRegion: {
+      get: function() {
+        return this.selectedRegion;
+      },
+      set: function(value) {
+        console.log('REGION UPDATED')
+        this.$emit('update:selectedRegion', value)
+      }
+    }
+  },
   created() {
     this.colors = {
       stationsNumber: d3.scaleSequential(d3.interpolateBlues),
@@ -132,6 +145,22 @@ export default {
   watch: {
     activeAttribute() {
       this.updateMap();
+    },
+    localSelectedRegion(newVal, oldVal) {
+      if (this.centered === newVal || (this.centered !== null && this.centered.properties.NAME_1 === newVal)) {
+        // region was not changed so dont change focus
+        return;
+      }
+      if (newVal === null) {
+        // remove focus from region
+        this.clicked(null);
+      } else {
+        // find svg path for selected region and focus on it
+        let selectedPath = this.svgG.selectAll('path.region').filter(function(d, i) {
+          return d3.select(this).data()[0].properties.NAME_1 == newVal;
+        })
+        this.clicked(selectedPath.data()[0])
+      }
     }
   },
   methods: {
@@ -161,8 +190,8 @@ export default {
     createSvg() {
       this.svg = d3.select('#cz-map')
         .append('svg')
-        .attr('width', this.svgWidth)
-        .attr('height', this.svgHeight);
+        .attr("preserveAspectRatio", "xMinYMin meet")
+        .attr("viewBox", `0 0 ${this.svgWidth} ${this.svgHeight}`)
       this.svgG = this.svg.append('g');
       this.svgG.call(this.generalTip);
       this.svgG.call(this.detailedTip);
@@ -228,12 +257,14 @@ export default {
         k = 2.5;
         this.centered = d;
         this.generalTip.hide();
+        this.localSelectedRegion = d.properties.NAME_1;
         console.log('Focused on ' + d.properties.NAME_1);
       } else {
         x = this.svgWidth / 2;
         y = this.svgHeight / 2;
         k = 1;
         this.centered = null;
+        this.localSelectedRegion = null;
         console.log('Focused on all')
       }
 
@@ -270,3 +301,10 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+#cz-map {
+  max-width: 900px;
+  max-height: 500px;
+}
+</style>

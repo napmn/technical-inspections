@@ -88,4 +88,10 @@ export default {
     top: 50%;
     left: 100%;
 }
+
+/* Stations */
+#line-chart, #horizontalbar-chart {
+  max-height: 200px;
+  width: 100%;
+}
 </style>

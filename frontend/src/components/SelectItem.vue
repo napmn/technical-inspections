@@ -1,22 +1,25 @@
 <template>
-  <div>
-    <b-row>
-      <b-col>{{ title }}</b-col>
-      <b-col cols="9">
-        <b-form-select id="select" :options="options" v-model="selected"/>
-      </b-col>
-    </b-row>
-  </div>
+  <b-row class="h-100 d-flex align-items-center">
+    <b-col>{{ title }}</b-col>
+    <b-col cols="9">
+      <b-form-select id="select" :options="options" v-model="localSelectedItem"/>
+    </b-col>
+  </b-row>
 </template>
 
 <script>
 export default {
   name: 'SelectItem',
-  props: ['title', 'options'],
-  data: function() {
-    return {
-      selected: null
+  props: ['title', 'options', 'selectedItem'],
+  computed: {
+    localSelectedItem: {
+      get: function() {
+        return this.selectedItem;
+      },
+      set: function(value) {
+        this.$emit('update:selectedItem', value);
+      }
     }
-  }
+  },
 }
 </script>

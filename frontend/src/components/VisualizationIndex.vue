@@ -1,42 +1,31 @@
 <template>
     <div class="main-page">
       <b-container>
-        <b-row>
-          <b-col>
-            <h2>Stanice technické kontroly</h2>
-            <description :text="descriptionText"/>
-          </b-col>
-          <b-col>
-            <filtration/>
-          </b-col>
-          <b-col>
-
-          </b-col>
-        </b-row>
-        <b-row>
+        <b-row class="border">
           <b-col cols="8">
-            <cz-map :svgWidth="mapWidth" :svgHeight="mapHeight"/>
+            <b-row>
+              <b-col class="border">
+                <h2>Stanice technické kontroly</h2>
+                <Description :text="descriptionText"/>
+              </b-col>
+              <b-col class="border">
+                <Filtration :selected-region.sync="selectedRegion"/>
+              </b-col>
+            </b-row>
+            <b-row>
+              <b-col class="border">
+                <CzMap :svgWidth="mapWidth" :svgHeight="mapHeight" :selected-region.sync="selectedRegion"/>
+              </b-col>
+            </b-row>
           </b-col>
-          <b-col></b-col>
+          <b-col cols="4">
+            <Vehicles/>
+          </b-col>
         </b-row>
-        <b-row>
-
-        </b-row>
+        <Stations :selected-region="selectedRegion"/>
       </b-container>
 
 
-
-
-        <!-- <b-button size="sm" @click="toggle">
-            {{ show ? 'Hide' : 'Show' }} Alert
-        </b-button>
-        <b-alert
-            v-model="show"
-            class="mt-3"
-            dismissible
-        >
-            Hello {{ name }}!
-        </b-alert> -->
     </div>
 </template>
 
@@ -44,19 +33,21 @@
 import Description from './Description'
 import Filtration from './Filtration'
 import CzMap from './CzMap'
+import Stations from './Stations'
+import Vehicles from './Vehicles'
+
 
 export default {
   name: 'VisualizationIndex',
   components: {
     Description,
     Filtration,
-    CzMap
+    CzMap,
+    Stations,
+    Vehicles
   },
   data () {
     return {
-      msg: 'Visualization Index page',
-      show: true,
-      name: "asdf",
       descriptionText: `
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla quam velit,
         vulputate eu pharetra nec, mattis ac neque. Duis vulputate commodo lectus,
@@ -66,12 +57,8 @@ export default {
       `,
       mapWidth: 900,
       mapHeight: 500,
+      selectedRegion: null
     }
   },
-  methods: {
-    toggle() {
-      this.show = !this.show
-    }
-  }
 }
 </script>

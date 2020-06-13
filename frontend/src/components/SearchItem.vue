@@ -1,12 +1,10 @@
 <template>
-  <div>
-    <b-row>
-      <b-col>{{ title }}</b-col>
-      <b-col cols="9">
-        <b-form-input v-model="search" :placeholder="text"/>
-      </b-col>
-    </b-row>
-  </div>
+  <b-row class="h-100 d-flex align-items-center">
+    <b-col>{{ title }}</b-col>
+    <b-col cols="9">
+      <b-form-input v-model="search" :placeholder="text"/>
+    </b-col>
+  </b-row>
 </template>
 
 <script>

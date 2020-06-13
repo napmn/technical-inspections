@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 
-from stk.models import Vehicle, STKInspection
+from stk.models import Vehicle, STKInspection, Station
 
 @admin.register(Vehicle)
 class VehicleAdmin(admin.ModelAdmin):
@@ -24,3 +24,8 @@ class STKInspectionAdmin(admin.ModelAdmin):
             )
         )
     get_vehicle.short_description = 'Vehicle'
+
+
+@admin.register(Station)
+class StationAdmin(admin.ModelAdmin):
+    list_display = ('stk_id', 'city', 'address', 'operator', 'latitude', 'longitude')
