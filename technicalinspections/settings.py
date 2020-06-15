@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'django_filters',
     'stk'
 ]
 
@@ -161,3 +162,10 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 POSITIONSTACK_ACCESS_KEY = env('POSITIONSTACK_ACCESS_KEY')
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [], # TODO
+    'DEFAULT_PERMISSION_CLASSES': [],
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend']
+}

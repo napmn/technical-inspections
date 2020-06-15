@@ -1,5 +1,5 @@
-from itertools import combinations
 
+from django.contrib.postgres.indexes import HashIndex
 from django.db import models
 
 from stk.enums import InspectionType, InspectionTypeNormalized, InspectionResult, EmissionResult
@@ -8,6 +8,7 @@ from stk.enums import InspectionType, InspectionTypeNormalized, InspectionResult
 class Vehicle(models.Model):
     vehicle_vendor = models.CharField(max_length=255, db_index=True) # TZn
     vehicle_model = models.CharField(max_length=255) # ObchOznTyp
+    vehicle_vendor_model = models.CharField(max_length=512, blank=True, null=True)
     vehicle_type = models.CharField(max_length=255, db_index=True) # DrVoz
     vehicle_category = models.CharField(max_length=255) # Ct
 
@@ -19,12 +20,17 @@ class Vehicle(models.Model):
 
     class Meta:
         indexes = [
-            models.Index(fields=('vehicle_vendor', 'vehicle_model'), name='vehicle_vendor_model_index')
+            HashIndex(fields=('vehicle_vendor_model',))
         ]
 
     def __str__(self):
         return f'{self.vehicle_vendor} - {self.vehicle_model} - {self.vehicle_type}'
 
+    def save(self, *args, **kwargs):
+        if not self.vehicle_vendor_model:
+            self.vehicle_vendor_model = f'{self.vehicle_vendor} {self.vehicle_model}'
+
+        super().save(*args, **kwargs)
 
 class STKInspection(models.Model):
     station = models.ForeignKey('stk.Station', to_field='stk_id', null=False, blank=False, on_delete=models.CASCADE)
@@ -54,10 +60,15 @@ class Station(models.Model):
     operator = models.CharField(max_length=255, blank=True, null=True)
     tel_number = models.CharField(max_length=255, blank=True, null=True)
     email = models.CharField(max_length=255, blank=True, null=True)
-    region = models.CharField(max_length=255, blank=True, null=True, db_index=True)
+    region = models.CharField(max_length=255, blank=True, null=True)
 
     latitude = models.CharField(max_length=255, blank=True, null=True)
     longitude = models.CharField(max_length=255, blank=True, null=True)
+
+    class Meta:
+        indexes = [
+            HashIndex(fields=('region',))
+        ]
 
     def __str__(self):
         return f'{self.stk_id} - {self.operator} - {self.city}'

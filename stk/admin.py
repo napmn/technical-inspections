@@ -9,7 +9,8 @@ from stk.models import Vehicle, STKInspection, Station, PrecalculatedStatistic, 
 @admin.register(Vehicle)
 class VehicleAdmin(admin.ModelAdmin):
     list_display = (
-        'vehicle_vendor', 'vehicle_model', 'vehicle_type', 'vehicle_category', 'km', 'first_registration_date'
+        'vehicle_vendor', 'vehicle_model', 'vehicle_type', 'vehicle_category', 'km',
+        'first_registration_date'
     )
 
 
