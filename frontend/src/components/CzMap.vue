@@ -18,7 +18,7 @@ import d3Tip from 'd3-tip';
 
 export default {
   name: 'CzMap',
-  props: ['svgWidth', 'svgHeight', 'selectedRegion'],
+  props: ['svgWidth', 'svgHeight', 'selectedRegion', 'stations'],
   data() {
     return {
       topoData: {},
@@ -161,6 +161,22 @@ export default {
         })
         this.clicked(selectedPath.data()[0])
       }
+    },
+    stations(newVal, oldVal) {
+      console.log('watching stations', oldVal, newVal);
+      if (newVal) {
+        let stationGlyphs = this.svgG.selectAll('circle.station')
+          .data(newVal);
+
+        stationGlyphs.enter()
+          .append('circle')
+          .attr('class', 'station')
+          .attr('cx', d => d.map_x)
+          .attr('cy', d => d.map_y)
+          .attr('r', 1)
+          .style('opacity', 0)
+          .style('fill', d => d.region == 'Hlavní město Praha' ? 'blue': 'red');
+      }
     }
   },
   methods: {
@@ -267,6 +283,10 @@ export default {
         this.localSelectedRegion = null;
         console.log('Focused on all')
       }
+
+      this.svgG.selectAll('circle.station').transition()
+          .duration(750)
+          .style('opacity', this.centered ? 1 : 0);
 
       this.svgG.selectAll('path')
           .classed('inactive', this.centered && ((p) => { return p != this.centered }))

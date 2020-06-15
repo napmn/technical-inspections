@@ -14,7 +14,7 @@
             </b-row>
             <b-row>
               <b-col class="border">
-                <CzMap :svgWidth="mapWidth" :svgHeight="mapHeight" :selected-region.sync="selectedRegion"/>
+                <CzMap :svgWidth="mapWidth" :svgHeight="mapHeight" :selected-region.sync="selectedRegion" :stations="stations"/>
               </b-col>
             </b-row>
           </b-col>
@@ -57,8 +57,15 @@ export default {
       `,
       mapWidth: 900,
       mapHeight: 500,
-      selectedRegion: null
+      selectedRegion: null,
+      apiBaseUrl: 'http://localhost:8000',
+      stations: null,
     }
   },
+  mounted() {
+    this.axios.get(this.apiBaseUrl + '/stations').then((response) => {
+      this.stations = response.data;
+    })
+  }
 }
 </script>

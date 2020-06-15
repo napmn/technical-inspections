@@ -17,6 +17,8 @@ requests = "*"
 django-reverse-admin = "*"
 markdown = "*"
 django-filter = "*"
+django-cors-headers = "*"
+googlemaps = "*"
 
 [requires]
 python_version = "3.6"

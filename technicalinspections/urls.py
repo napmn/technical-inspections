@@ -2,11 +2,12 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework import routers
 
-from stk.api import PrecalculatedStatisticViewset, StatisticViewSet
+from stk.api import PrecalculatedStatisticViewset, StatisticViewSet, StationsViewSet
 
 
 router = routers.DefaultRouter()
 router.register(r'precalculated-stats', PrecalculatedStatisticViewset, basename='precalculated-stats')
+router.register(r'stations', StationsViewSet, basename='stations')
 
 
 urlpatterns = [

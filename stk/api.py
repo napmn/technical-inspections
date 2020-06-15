@@ -6,7 +6,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from stk.models import PrecalculatedStatistic, STKInspection, Station, Vehicle
-from stk.serializers import PrecalculatedStatisticSerializer, DummySerializer
+from stk.serializers import PrecalculatedStatisticSerializer, StationSerializer
 
 
 logger = logging.getLogger(__name__)
@@ -33,3 +33,10 @@ class StatisticViewSet(viewsets.GenericViewSet):
         count = self.get_queryset().filter(station__in=stations, vehicle__in=vehicles).count()
 
         return Response({'count': count}, status=status.HTTP_200_OK)
+
+
+class StationsViewSet(viewsets.ModelViewSet):
+    serializer_class = StationSerializer
+    lookup_field = 'stk_id'
+    queryset = Station.objects.exclude(longitude=None)
+    filterset_fields = ['region']
