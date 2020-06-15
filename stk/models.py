@@ -65,6 +65,15 @@ class Station(models.Model):
     latitude = models.CharField(max_length=255, blank=True, null=True)
     longitude = models.CharField(max_length=255, blank=True, null=True)
 
+    google_latitude = models.CharField(max_length=255, blank=True, null=True)
+    google_longitude = models.CharField(max_length=255, blank=True, null=True)
+
+    map_x = models.IntegerField(default=0)
+    map_y = models.IntegerField(default=0)
+
+    number_of_inspections = models.IntegerField(default=0)
+    pass_rate = models.DecimalField(max_digits=5, decimal_places=4, default=0.0)
+
     class Meta:
         indexes = [
             HashIndex(fields=('region',))

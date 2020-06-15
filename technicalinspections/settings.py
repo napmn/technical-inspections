@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
     'rest_framework',
     'django_filters',
     'stk'
@@ -49,6 +50,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -162,10 +164,23 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 POSITIONSTACK_ACCESS_KEY = env('POSITIONSTACK_ACCESS_KEY')
-
+GOOGLE_MAPS_API_KEY = env('GOOGLE_MAPS_API_KEY')
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [], # TODO
     'DEFAULT_PERMISSION_CLASSES': [],
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend']
 }
+
+
+MAP_WIDTH = 870
+MAP_HEIGHT = 405
+MAP_TOP_PADDING = 40
+
+CZ_MIN_LONGITUDE = 12.09
+CZ_MAX_LONGITUDE = 18.87
+CZ_MIN_LATITUDE = 48.55
+CZ_MAX_LATITUDE = 51.06
+
+
+CORS_ORIGIN_ALLOW_ALL = True # TODO

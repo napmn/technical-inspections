@@ -16,7 +16,7 @@ class VehicleAdmin(admin.ModelAdmin):
 
 @admin.register(Station)
 class StationAdmin(admin.ModelAdmin):
-    list_display = ('stk_id', 'city', 'address', 'operator', 'latitude', 'longitude', 'region')
+    list_display = ('stk_id', 'city', 'address', 'operator', 'latitude', 'longitude', 'map_x', 'map_y', 'region')
 
 
 class StationInlineAdmin(admin.StackedInline):

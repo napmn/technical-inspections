@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from stk.models import PrecalculatedStatistic, InspectionTypeStatistic
+from stk.models import PrecalculatedStatistic, InspectionTypeStatistic, Station
 
 
 class InspectionTypeStatisticSerializer(serializers.ModelSerializer):
@@ -17,5 +17,7 @@ class PrecalculatedStatisticSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class DummySerializer(serializers.Serializer):
-    count = serializers.IntegerField()
+class StationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Station
+        fields = '__all__'
