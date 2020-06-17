@@ -1,11 +1,26 @@
 <template>
   <b-row>
-    <b-button size="sm" @click="changeAttribute">
-    Toggle
-    </b-button>
     <b-col cols="11" id="cz-map"></b-col>
-    <b-col class="border">
-      LEGEND
+    <b-col class="text-center">
+      <div class="pb-5">
+        <h4>Výběr aktivní dimenze</h4>
+        <div><b-button block size="sm" @click="setActiveDimension('number_of_stations')"
+          :class="[activeDimension=='number_of_stations'?'active':'not-active', 'mt-2']">Počet stanic</b-button></div>
+        <div><b-button block size="sm" @click="setActiveDimension('number_of_inspections')"
+          :class="[activeDimension=='number_of_inspections'?'active':'not-active', 'mt-2']">Počet kontrol</b-button></div>
+        <div><b-button block size="sm" @click="setActiveDimension('pass_rate')"
+          :class="[activeDimension=='pass_rate'?'active':'not-active', 'mt-2']">Míra úspěšnosti</b-button></div>
+      </div>
+      <div class="border rounded mt-5 p-2 legend">
+        <h4 class="">Legenda</h4>
+        <div class="text-left">
+          Zabarvení krajů odpovídá hodnotě kterou kraj nabývá pro vybranou dimenzi.
+        </div>
+        <div class="text-left pt-2">
+          Kroužky, které se objeví po přiblížení mapy označují stanice.
+          Barva kroužku vyjadřuje míru úspěšnosti v dané stanici.
+        </div>
+      </div>
     </b-col>
   </b-row>
 </template>
@@ -18,84 +33,18 @@ import d3Tip from 'd3-tip';
 
 export default {
   name: 'CzMap',
-  props: ['svgWidth', 'svgHeight', 'selectedRegion', 'stations'],
+  props: ['svgWidth', 'svgHeight', 'selectedRegion', 'stations', 'precalculatedStats'],
   data() {
     return {
       topoData: {},
       centered: null,
-      activeAttribute: 'stationsNumber',
-      stats: [
-        {
-          name: 'Středočeský',
-          stationsNumber: 10,
-          passRate: 0.9
-        },
-        {
-          name: 'Ústecký',
-          stationsNumber: 20,
-          passRate: 0.92
-        },
-        {
-          name: 'Jihočeský',
-          stationsNumber: 25,
-          passRate: 0.88
-        },
-        {
-          name: 'Jihomoravský',
-          stationsNumber: 40,
-          passRate: 0.85
-        },
-        {
-          name: 'Karlovarský',
-          stationsNumber: 15,
-          passRate: 0.9
-        },
-        {
-          name: 'Královéhradecký',
-          stationsNumber: 44,
-          passRate: 0.89
-        },
-        {
-          name: 'Liberecký',
-          stationsNumber: 26,
-          passRate: 0.83
-        },
-        {
-          name: 'Kraj Vysočina',
-          stationsNumber: 33,
-          passRate: 0.91
-        },
-        {
-          name: 'Moravskoslezský',
-          stationsNumber: 38,
-          passRate: 0.87
-        },
-        {
-          name: 'Olomoucký',
-          stationsNumber: 30,
-          passRate: 0.92
-        },
-        {
-          name: 'Pardubický',
-          stationsNumber: 18,
-          passRate: 0.84
-        },
-        {
-          name: 'Plzeňský',
-          stationsNumber: 31,
-          passRate: 0.98
-        },
-        {
-          name: 'Praha',
-          stationsNumber: 6,
-          passRate: 0.90
-        },
-        {
-          name: 'Zlínský',
-          stationsNumber: 18,
-          passRate: 0.87
-        }
-      ] // TODO: connect to API
+      localPrecalculatedStats: null,
+      activeDimension: 'number_of_stations',
+      strokeColors: {
+        number_of_stations: 'aqua',
+        number_of_inspections: 'darkorange',
+        pass_rate: 'limegreen'
+      }
     }
   },
   computed: {
@@ -104,15 +53,15 @@ export default {
         return this.selectedRegion;
       },
       set: function(value) {
-        console.log('REGION UPDATED')
         this.$emit('update:selectedRegion', value)
       }
     }
   },
   created() {
     this.colors = {
-      stationsNumber: d3.scaleSequential(d3.interpolateBlues),
-      passRate: d3.scaleSequential(d3.interpolateGreens)
+      number_of_stations: d3.scaleSequential(d3.interpolateBlues),
+      number_of_inspections: d3.scaleSequential(d3.interpolateOranges),
+      pass_rate: d3.scaleSequential(d3.interpolateGreens)
     }
     this.scale = d3.scaleLinear().range([0, this.svgWidth / 2]);
   },
@@ -143,7 +92,19 @@ export default {
         .attr("transform", `translate(${this.svgWidth/4},${this.svgHeight-35})`);
   },
   watch: {
-    activeAttribute() {
+    activeDimension() {
+      this.updateMap();
+    },
+    precalculatedStats(newVal, oldVal) {
+      this.localPrecalculatedStats = newVal.filter(d => d.region !== null);
+      this.localPrecalculatedStats.forEach(d => {
+        let total = d.eligible + d.partially_eligible + d.ineligible;
+        if (total == 0) {
+          d.pass_rate = 0.5;
+        } else {
+          d.pass_rate = (d.eligible + d.partially_eligible) / (total);
+        }
+      })
       this.updateMap();
     },
     localSelectedRegion(newVal, oldVal) {
@@ -163,19 +124,8 @@ export default {
       }
     },
     stations(newVal, oldVal) {
-      console.log('watching stations', oldVal, newVal);
       if (newVal) {
-        let stationGlyphs = this.svgG.selectAll('circle.station')
-          .data(newVal);
-
-        stationGlyphs.enter()
-          .append('circle')
-          .attr('class', 'station')
-          .attr('cx', d => d.map_x)
-          .attr('cy', d => d.map_y)
-          .attr('r', 1)
-          .style('opacity', 0)
-          .style('fill', d => d.region == 'Hlavní město Praha' ? 'blue': 'red');
+        this.updateMap();
       }
     }
   },
@@ -190,17 +140,26 @@ export default {
         .attr('class', 'd3-tip')
         .offset([10, 0])
         .html((d) => {
-          return '<span>Kraj: ' + d.properties.NAME_1 + '</span><br>'
-            + '<span>Počet stanic: ' + d.stationsNumber + '</span><br>'
-            + '<span>Míra úspěšnosti: ' + d.passRate + '</span>'
+          return '<span class="d3-tip-bold">Kraj: ' + d.properties.NAME_1 + '</span><br>'
+            + '<span>Počet stanic: ' + d.number_of_stations + '</span><br>'
+            + '<span>Počet kontrol: ' + d.number_of_inspections + '</span><br>'
+            + `<span">Míra úspěšnosti: ${(d.pass_rate*100).toFixed(3)}%</span><br>`
         });
       this.detailedTip = d3Tip()
         .attr('id', 'd3-tip-detailed')
         .attr('class', 'd3-tip')
-        .offset([10, 0])
+        .offset([-10, 0])
         .html((d) => {
-          return '<span>Skuska detailu</span><br>'
-          + '<span>Kraj: ' + d.properties.NAME_1 + '</span'
+          return '<span class="d3-tip-bold">Detail stanice</span><br>'
+          + `<span>Provozovatel: ${d.operator}</span><br>`
+          + `<span>Adresa: ${d.address}, ${d.city}</span><br>`
+          + `<span>Oprávnění: ${d.authorization}</span><br><br>`
+          + `<span class="d3-tip-bold">Kontakt</span><br>`
+          + `<span>Tel. č.: ${d.tel_number}</span><br>`
+          + `<span>Email: ${d.email}</span><br><br>`
+          + `<span class="d3-tip-bold">Statistiky</span><br>`
+          + `<span>Počet kontrol: ${d.number_of_inspections}</span><br>`
+          + `<span>Míra úspěšnosti: ${(d.pass_rate*100).toFixed(3)}%</span><br>`
         });
     },
     createSvg() {
@@ -220,13 +179,13 @@ export default {
       this.topoRegions = topojson.feature(this.topoData, this.topoData.objects.CZE_adm1);
       this.pathGenerator.projection().fitSize([this.svgWidth, this.svgHeight], this.topoRegions);
     },
-    updateColorAndScaleByActiveAttribute() {
-      let maxVal = d3.max(this.stats.map(d => d[this.activeAttribute]));
-      let minVal = d3.min(this.stats.map(d => d[this.activeAttribute]));
-      this.colors[this.activeAttribute].domain([minVal, maxVal]);
+    updateColorAndScaleByactiveDimension() {
+      let maxVal = d3.max(this.localPrecalculatedStats.map(d => d[this.activeDimension]));
+      let minVal = d3.min(this.localPrecalculatedStats.map(d => d[this.activeDimension]));
+      this.colors[this.activeDimension].domain([minVal, maxVal]);
       this.scale.domain([minVal, maxVal]).nice();
-      this.legend.select('#legend-zero').attr("stop-color", this.colors[this.activeAttribute](maxVal));
-      this.legend.select('#legend-hundred').attr("stop-color", this.colors[this.activeAttribute](minVal));
+      this.legend.select('#legend-zero').attr("stop-color", this.colors[this.activeDimension](maxVal));
+      this.legend.select('#legend-hundred').attr("stop-color", this.colors[this.activeDimension](minVal));
     },
     drawRegions() {
       let regionPaths = this.svgG.selectAll('path.region')
@@ -242,26 +201,44 @@ export default {
         .on('mouseout', this.generalTip.hide)
         .merge(regionPaths)
           .style('opacity', 0.5)
+          .style('stroke', this.strokeColors[this.activeDimension])
           .transition()
           .duration(800)
-          .style('fill', d => this.colors[this.activeAttribute](d[this.activeAttribute]))
+          .style('fill', d => this.colors[this.activeDimension](d[this.activeDimension]))
           .style('opacity', 1)
     },
     updateMap() {
       console.log('update map');
-      this.svg.selectAll('.axis').remove();
+      if (this.localPrecalculatedStats && this.stations) {
+        console.log('update map inside');
+        this.svg.selectAll('.axis').remove();
 
-      this.stats.map(d => {
-        let region = this.topoRegions.features.find(r => r.properties.NAME_1 == d.name);
-        if (region) {
-          region.stationsNumber = d.stationsNumber;
-          region.passRate = d.passRate;
-        }
-      });
+        this.localPrecalculatedStats.map(d => {
+          let region = this.topoRegions.features.find(r => r.properties.NAME_1 == d.region);
+          if (region) {
+            region.number_of_stations = d.number_of_stations;
+            region.number_of_inspections = d.number_of_inspections;
+            region.pass_rate = d.pass_rate;
+          }
+        });
 
-      this.updateColorAndScaleByActiveAttribute();
-      this.updateAxis();
-      this.drawRegions();
+        this.updateColorAndScaleByactiveDimension();
+        this.updateAxis();
+        this.drawRegions();
+
+        this.colors.pass_rate.domain([0.95, 1]);
+
+        let stationGlyphs = this.svgG.selectAll('circle.station')
+          .data(this.stations);
+        stationGlyphs.enter()
+          .append('circle')
+          .attr('class', 'station')
+          .attr('cx', d => d.map_x)
+          .attr('cy', d => d.map_y)
+          .attr('r', 2)
+          .style('opacity', 0)
+          .style('fill', d => this.colors.pass_rate(d.pass_rate));
+      }
     },
     clicked(d) {
       var x, y, k;
@@ -281,12 +258,16 @@ export default {
         k = 1;
         this.centered = null;
         this.localSelectedRegion = null;
+        this.detailedTip.hide();
         console.log('Focused on all')
       }
 
-      this.svgG.selectAll('circle.station').transition()
+      this.svgG.selectAll('circle.station')
+          .on('mouseover', this.centered ? this.detailedTip.show : undefined)
+          .on('mouseout', this.centered ? this.detailedTip.hide : undefined)
+          .transition()
           .duration(750)
-          .style('opacity', this.centered ? 1 : 0);
+          .style('opacity', this.centered ? 1 : 0)
 
       this.svgG.selectAll('path')
           .classed('inactive', this.centered && ((p) => { return p != this.centered }))
@@ -309,14 +290,8 @@ export default {
         .duration(800)
         .call(axis);
     },
-    changeAttribute() { // TODO: this is only dummy method
-      if (this.activeAttribute == 'stationsNumber') {
-        this.activeAttribute = 'passRate';
-      }
-      else {
-        this.activeAttribute = 'stationsNumber';
-      }
-      console.log('Active attribute is now ' + this.activeAttribute);
+    setActiveDimension(dimension) {
+      this.activeDimension  = dimension
     }
   }
 }
@@ -326,5 +301,11 @@ export default {
 #cz-map {
   max-width: 900px;
   max-height: 500px;
+}
+.active {
+
+}
+.not-active {
+  opacity: 0.4
 }
 </style>

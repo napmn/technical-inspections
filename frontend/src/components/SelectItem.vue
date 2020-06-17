@@ -1,6 +1,6 @@
 <template>
   <b-row class="h-100 d-flex align-items-center">
-    <b-col>{{ title }}</b-col>
+    <b-col class="ml-4"><h4>{{ title }}</h4></b-col>
     <b-col cols="9">
       <b-form-select id="select" :options="options" v-model="localSelectedItem"/>
     </b-col>

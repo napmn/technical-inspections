@@ -5,8 +5,8 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from stk.models import PrecalculatedStatistic, STKInspection, Station, Vehicle
-from stk.serializers import PrecalculatedStatisticSerializer, StationSerializer
+from stk.models import PrecalculatedStatistic, STKInspection, Station, Vehicle, VehicleName
+from stk.serializers import PrecalculatedStatisticSerializer, StationSerializer, VehicleSuggestionSerializer
 
 
 logger = logging.getLogger(__name__)
@@ -40,3 +40,15 @@ class StationsViewSet(viewsets.ModelViewSet):
     lookup_field = 'stk_id'
     queryset = Station.objects.exclude(longitude=None)
     filterset_fields = ['region']
+
+
+class VehicleVendorModelSuggestions(viewsets.ViewSet):
+    def get(self, request):
+        search = request.query_params.get('search', '')
+        if len(search) < 3:
+            suggestions = []
+        else:
+            vehicle_names = VehicleName.objects.filter(vendor_model__icontains=search)[:20]
+            suggestions = VehicleSuggestionSerializer(vehicle_names, many=True).data
+
+        return Response(suggestions, status=status.HTTP_200_OK)

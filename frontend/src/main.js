@@ -9,6 +9,8 @@ import router from './router'
 import { BootstrapVue, IconsPlugin } from 'bootstrap-vue'
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
+import VueSimpleSuggest from 'vue-simple-suggest'
+import 'vue-simple-suggest/dist/styles.css'
 
 // Install BootstrapVue
 Vue.use(BootstrapVue)
@@ -16,6 +18,7 @@ Vue.use(BootstrapVue)
 Vue.use(IconsPlugin)
 
 Vue.use(VueAxios, axios)
+Vue.component('vue-simple-suggest', VueSimpleSuggest)
 
 Vue.config.productionTip = false
 

@@ -11,6 +11,10 @@ export default {
 </script>
 
 <style>
+body, .legend {
+  background-color: #f1f4f6;
+}
+
 #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -20,14 +24,15 @@ export default {
 }
 .container {
   max-width: 1800px;
+  background-color: #ffffff
 }
 /* CZ map */
 .region {
   fill: #aaa;
 }
-.region {
+/* .region {
   stroke: aqua;
-}
+} */
 .region.unzoomed:hover {
   stroke-width:3px;
 }
@@ -35,13 +40,16 @@ export default {
 /* Tooplitp */
 .d3-tip {
     line-height: 1.1rem;
-    font-weight: bold;
     padding: 12px;
     background: rgba(0, 0, 0, 0.8);
     color: #fff;
     border-radius: 2px;
     pointer-events: none;
   }
+
+.d3-tip-bold {
+    font-weight: bold;
+}
 
 /* Creates a small triangle extender for the tooltip */
 .d3-tip:after {

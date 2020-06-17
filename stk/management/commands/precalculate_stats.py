@@ -18,7 +18,8 @@ class Command(BaseCommand):
         for region in regions_and_all:
             logger.debug(f'Calculating statistics for region {region}')
             if region is None:
-                stations = Station.objects.all()
+                # we dont want to include stations that dont have assigned region
+                stations = Station.objects.exclude(region=None)
             else:
                 stations = Station.objects.filter(region=region)
             number_of_stations = stations.count()
@@ -47,7 +48,7 @@ class Command(BaseCommand):
                     f'Creating inspection type statistic for region: {region}, inspection type:{inspection_type}, '
                     f'repeated: {repeated}'
                 )
-                number_of_inspections = STKInspection.objects.filter(
+                number_of_inspections = inspections_in_region.filter(
                     inspection_type=inspection_type, repeated=repeated
                 ).count()
                 InspectionTypeStatistic.objects.create(

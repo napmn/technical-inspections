@@ -1,11 +1,10 @@
 <template>
-  <b-row id="stations" class="border">
-    <b-col cols="3">
-      <h4>Stanice</h4>
-      <div>Počet stanic:</div>
-      <div>Zkontrolovaných vozidel:</div>
-      <div>Úspěšnost:</div>
-      <div>Podporované typy vozidel:</div>
+  <b-row id="stations" class="pb-2">
+    <b-col cols="3" class="pt-2">
+      <h3>Stanice</h3>
+      <h5 class="pt-3">Počet stanic: {{ selectedStations.numberOfStations }}</h5>
+      <h5>Počet vykonaných kontrol: {{ selectedStations.numberOfInspections }}</h5>
+      <h5>Úspěšnost: {{ selectedStations.passRate }}%</h5>
     </b-col>
     <b-col cols="5">
       <LineChart :chart-data="datacollection" :options="lineChartOptions" class="justify-content-center"/>
@@ -27,9 +26,14 @@ export default {
     LineChart,
     BarChart
   },
-  props: ['selectedRegion'],
+  props: ['selectedRegion', 'selectedVehicle', 'stations', 'precalculatedStats'],
   data() {
     return {
+      selectedStations: {
+        numberOfStations: 0,
+        numberOfInspections: 0,
+        passRate: 0
+      },
       datacollection: {},
       bardatacollection: {},
       lineChartOptions: {
@@ -60,67 +64,94 @@ export default {
   },
   watch: {
     selectedRegion(newVal, oldVal) {
+      if (this.selectedVehicle || this.precalculatedStats === null) { // use stations
+        // TODO
+      } else {
+        this.usePrecalculatedStats(this.precalculatedStats.find(obj => obj.region == this.selectedRegion))
+      }
       this.fillLineData(newVal);
       this.fillBarData(newVal);
+    },
+    precalculatedStats(newVal, oldVal) {
+      if (this.selectedVehicle){ // TODO: precalculated stats should be used only without selected vehicle
+        this.usePrecalculatedStats(newVal.find(obj => obj.region == this.selectedRegion));
+      } else {
+        this.usePrecalculatedStats(newVal.find(obj => obj.region == this.selectedRegion));
+      }
+      this.fillLineData(this.selectedRegion);
+      this.fillBarData(this.selectedRegion);
+    },
+    stations(newVal, oldVal) {
+      if (this.selectedVehicle) {
+        // TODO
+      }
     }
   },
   mounted() {
-    this.fillLineData(null);
-    this.fillBarData(null);
+    // this.fillLineData(null);
+    // this.fillBarData(null);
   },
   methods: {
+    filterStatsForBarData(inspectionStats, repeated) {
+      return inspectionStats.filter(obj => obj.repeated == repeated)
+        .sort((a, b) => (a.inspection_type > b.inspection_type) ? 1 : ((b.inspection_type > a.inspection_type) ? -1 : 0))
+        .map(obj => obj.number_of_inspections);
+    },
+    prepareDataForLineChart(data, ) {
+
+    },
+    usePrecalculatedStats(precalculatedItem) {
+      this.selectedStations.numberOfStations = precalculatedItem.number_of_stations;
+      this.selectedStations.numberOfInspections = precalculatedItem.number_of_inspections;
+      let passed = precalculatedItem.eligible + precalculatedItem.partially_eligible;
+      this.selectedStations.passRate = (passed / (passed + precalculatedItem.ineligible) * 100).toFixed(3);
+    },
     fillBarData(region) {
-      let data1, data2;
-      if (region === null) {
-        data1 = [18, 28, 12, 10, 15, 13, 14, 8, 8, 20, 11, 23];
-        data2 = [10, 13, 8, 16, 12, 7, 11, 12, 10, 6, 16, 17];
-      }
-      else {
-        data1 = [8, 11, 5, 10, 6, 6, 9, 5, 5, 6, 8, 12];
-        data2 = [10, 13, 8, 10, 12, 7, 8, 12, 10, 4, 16, 15];
-      }
+      let stats = this.precalculatedStats.find(obj => obj.region == region);
+      let labels = [...new Set(stats.inspectiontypestatistic_set.map(obj => obj.inspection_type))].sort();
+      let repeated = this.filterStatsForBarData(stats.inspectiontypestatistic_set, true);
+      let notRepeated = this.filterStatsForBarData(stats.inspectiontypestatistic_set, false);
+
       this.bardatacollection = {
-        labels: ['Rutinná', 'TSK', 'ADR', 'BATCV', 'Před registrací'],
+        labels: labels,
         datasets: [
           {
             label: 'Opakované prohlídky',
-            backgroundColor: '#36a2eb',
+            backgroundColor: '#23347e',
             // borderColor
-            data: data1
+            data: repeated
           },
           {
             label: 'Prvotné prohlídky',
-            backgroundColor: '#f87979',
-            data: data2
+            backgroundColor: '#facf6a',
+            data: notRepeated
           }
         ]
       }
     },
     fillLineData(region) {
-      let data1, data2;
-      if (region === null) {
-        data1 = [10, 13, 8, 16, 12, 7, 11, 12, 10, 12, 16, 17];
-        data2 = [18, 28, 12, 22, 15, 13, 14, 20, 11, 14, 18, 23];
-      }
-      else {
-        data1 = [8, 11, 5, 10, 6, 6, 9, 5, 5, 6, 8, 12];
-        data2 = [10, 13, 8, 10, 12, 7, 13, 12, 10, 10, 16, 15];
-      }
+      let stats = this.precalculatedStats.find(obj => obj.region == region);
+      let allInspections = stats.inspectionsinmonth_set.sort((a, b) => a.month - b.month)
+        .map(d => d.passed + d.not_passed);
+      let successfull = stats.inspectionsinmonth_set.sort((a, b) => a.month - b.month)
+        .map(d => d.passed);
+
       this.datacollection = {
         labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
         datasets: [
           {
-            fill: 'start',
+            fill: false,
             label: 'Úspešné prohlídky',
-            backgroundColor: '#36a2eb',
-            // borderColor
-            data: data1
+            backgroundColor: '#facf6a',
+            borderColor: '#facf6a',
+            data: successfull
           },
           {
-            fill: 'start',
+            fill: false,
             label: 'Všechny prohlídky',
-            backgroundColor: '#f87979',
-            data: data2
+            backgroundColor: '#23347e',
+            borderColor: '#23347e',
+            data: allInspections
           }
         ]
       }
@@ -132,5 +163,7 @@ export default {
 }
 </script>
 <style scoped>
-
+#stations {
+  margin-top: 10px;
+}
 </style>
