@@ -99,3 +99,16 @@ class InspectionTypeStatistic(models.Model):
     inspection_type = models.CharField(max_length=255, choices=InspectionTypeNormalized.CHOICES, db_index=True) # DrTP
     repeated = models.BooleanField(default=False)
     number_of_inspections = models.IntegerField(default=0)
+
+
+class InspectionsInMonth(models.Model):
+    precalculated_statistic = models.ForeignKey('stk.PrecalculatedStatistic', on_delete=models.CASCADE)
+    passed = models.IntegerField(default=0)
+    not_passed = models.IntegerField(default=0)
+    month = models.IntegerField(default=0)
+
+
+class VehicleName(models.Model):
+    vendor_model = models.CharField(max_length=512, blank=True, null=True, db_index=True)
+
+

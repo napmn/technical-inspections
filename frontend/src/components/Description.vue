@@ -1,7 +1,6 @@
 <template>
     <div class="description">
-        <p>
-            {{ text }}
+        <p v-html="text">
         </p>
     </div>
 </template>

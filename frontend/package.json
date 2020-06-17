@@ -17,11 +17,14 @@
     "chart.js": "^2.9.3",
     "d3": "^5.15.1",
     "d3-tip": "^0.9.1",
+    "jquery": "^1.9.1",
+    "popper.js": "^1.16.1",
     "topojson-client": "^3.1.0",
     "vue": "^2.5.2",
     "vue-axios": "^2.1.5",
     "vue-chartjs": "^3.5.0",
-    "vue-router": "^3.0.1"
+    "vue-router": "^3.0.1",
+    "vue-simple-suggest": "^1.10.1"
   },
   "devDependencies": {
     "autoprefixer": "^7.1.2",

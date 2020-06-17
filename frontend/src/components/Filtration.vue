@@ -1,6 +1,6 @@
 <template>
   <div class="filtration h-100 d-flex flex-column">
-    <SearchItem :title="searchTitle" :text="searchText"/>
+    <SearchItem :title="searchTitle" :text="searchText" :selected-vehicle.sync="localSelectedVehicle"/>
     <SelectItem :title="selectTitle" :options="selectOptions" :selected-item.sync="localSelectedRegion"/>
   </div>
 </template>
@@ -15,7 +15,7 @@ export default {
     SearchItem,
     SelectItem
   },
-  props: ['selectedRegion'],
+  props: ['selectedRegion', 'selectedVehicle'],
   data() {
     return {
       searchTitle: 'Vozidlo',
@@ -23,20 +23,20 @@ export default {
       selectTitle: 'Kraj',
       selectOptions: [
         {value: null, text: 'Všechny kraje'},
-        {value: 'Středočeský', text: 'Středočeský'},
-        {value: 'Ústecký', text: 'Ústecký'},
-        {value: 'Jihočeský', text: 'Jihočeský'},
-        {value: 'Jihomoravský', text: 'Jihomoravský'},
-        {value: 'Karlovarský', text: 'Karlovarský'},
-        {value: 'Královéhradecký', text: 'Královéhradecký'},
-        {value: 'Liberecký', text: 'Liberecký'},
-        {value: 'Kraj Vysočina', text: 'Kraj Vysočina'},
-        {value: 'Moravskoslezský', text: 'Moravskoslezský'},
-        {value: 'Olomoucký', text: 'Olomoucký'},
-        {value: 'Pardubický', text: 'Pardubický'},
-        {value: 'Plzeňský', text: 'Plzeňský'},
-        {value: 'Praha', text: 'Praha'},
-        {value: 'Zlínský', text: 'Zlínský'}
+        {value: 'Středočeský kraj', text: 'Středočeský'},
+        {value: 'Ústecký kraj', text: 'Ústecký'},
+        {value: 'Jihočeský kraj', text: 'Jihočeský'},
+        {value: 'Jihomoravský kraj', text: 'Jihomoravský'},
+        {value: 'Karlovarský kraj', text: 'Karlovarský'},
+        {value: 'Královéhradecký kraj', text: 'Královéhradecký'},
+        {value: 'Liberecký kraj', text: 'Liberecký'},
+        {value: 'Vysočina', text: 'Vysočina'},
+        {value: 'Moravskoslezský kraj', text: 'Moravskoslezský'},
+        {value: 'Olomoucký kraj', text: 'Olomoucký'},
+        {value: 'Pardubický kraj', text: 'Pardubický'},
+        {value: 'Plzeňský kraj', text: 'Plzeňský'},
+        {value: 'Hlavní město Praha', text: 'Hlavní město Praha'},
+        {value: 'Zlínský kraj', text: 'Zlínský'}
       ]
     }
   },
@@ -49,6 +49,15 @@ export default {
       set: function(value) {
         console.log('REGION CHANGED IN FILTRATION ' + value);
         this.$emit('update:selectedRegion', value);
+      }
+    },
+    localSelectedVehicle: {
+      get: function() {
+        return this.selectedVehicle;
+      },
+      set: function(value) {
+        console.log('VEHICLE WAS SEARCHED AND SELECTED ' + value);
+        this.$emit('update:selectedVehicle', value);
       }
     }
   },

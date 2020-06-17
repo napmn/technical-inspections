@@ -1,28 +1,30 @@
 <template>
     <div class="main-page">
-      <b-container>
-        <b-row class="border">
+      <b-container class="border rounded">
+        <b-row>
           <b-col cols="8">
-            <b-row>
-              <b-col class="border">
+            <b-row class="pt-3">
+              <b-col>
                 <h2>Stanice technické kontroly</h2>
                 <Description :text="descriptionText"/>
               </b-col>
-              <b-col class="border">
-                <Filtration :selected-region.sync="selectedRegion"/>
+              <b-col>
+                <Filtration :selected-region.sync="selectedRegion" :selected-vehicle.sync="selectedVehicle"/>
               </b-col>
             </b-row>
             <b-row>
-              <b-col class="border">
-                <CzMap :svgWidth="mapWidth" :svgHeight="mapHeight" :selected-region.sync="selectedRegion" :stations="stations"/>
+              <b-col>
+                <CzMap :svgWidth="mapWidth" :svgHeight="mapHeight" :selected-region.sync="selectedRegion" :stations="stations"
+                  :precalculated-stats="precalculatedStats"/>
               </b-col>
             </b-row>
           </b-col>
-          <b-col cols="4">
-            <Vehicles/>
+          <b-col cols="4" class="border-left mt-4 pl-5">
+            <Vehicles :selected-vehicle.sync="selectedVehicle"/>
           </b-col>
         </b-row>
-        <Stations :selected-region="selectedRegion"/>
+        <Stations :selected-region.sync="selectedRegion" :selected-vehicle.sync="selectedVehicle" :stations="stations"
+          :precalculated-stats="precalculatedStats"/>
       </b-container>
 
 
@@ -49,23 +51,25 @@ export default {
   data () {
     return {
       descriptionText: `
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla quam velit,
-        vulputate eu pharetra nec, mattis ac neque. Duis vulputate commodo lectus,
-        ac blandit elit tincidunt id. Sed rhoncus, tortor sed eleifend tristique,
-        tortor mauris molestie elit, et lacinia ipsum quam nec dui. Quisque nec
-        mauris sit amet elit iaculis pretium sit amet quis magna. Aenean velit
+        Tento interaktivní dashboard zobrazuje statistiky technických kontrol z roku 2018.
+        Použitá datová sada je volně dostupná na stránce <a href="https://data.gov.cz/">data.gov.cz</a>.
       `,
       mapWidth: 900,
       mapHeight: 500,
       selectedRegion: null,
+      selectedVehicle: null,
       apiBaseUrl: 'http://localhost:8000',
       stations: null,
+      precalculatedStats: null
     }
   },
   mounted() {
     this.axios.get(this.apiBaseUrl + '/stations').then((response) => {
       this.stations = response.data;
-    })
+    });
+    this.axios.get(this.apiBaseUrl + '/precalculated-stats').then((response) => {
+      this.precalculatedStats = response.data;
+    });
   }
 }
 </script>
