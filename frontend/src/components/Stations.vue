@@ -88,8 +88,6 @@ export default {
     }
   },
   mounted() {
-    // this.fillLineData(null);
-    // this.fillBarData(null);
   },
   methods: {
     filterStatsForBarData(inspectionStats, repeated) {

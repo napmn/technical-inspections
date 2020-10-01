@@ -142,6 +142,7 @@ export default {
   watch: {
     localSelectedVehicle(newVal, oldVal) {
       console.log('local ', newVal, oldVal)
+      // connect to api endpoint
       if (newVal == 'AUDI Q5') {
         this.vehicleStats.averageKm = 202180
         this.vehicleStats.vehicleType = 'OSOBNÍ AUTOMOBIL'
